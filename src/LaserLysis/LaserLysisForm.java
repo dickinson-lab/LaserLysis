@@ -27,6 +27,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.SwingWorker;
 import mmcorej.TaggedImage;
 
@@ -51,8 +52,9 @@ public class LaserLysisForm extends JFrame {
     String[] none = {"<none>"};
     
     private final JLabel instruction1 = new JLabel("<html>Configure acquisition in MDA window before lysing your cell</html");
-    
+  
     // Initialize Stage controls
+    //private final JPanel StagePanel = new JPanel();
     private final JLabel labelY= new JLabel("<html>Distance to move in Y<br/>(along channel) before acquisition</html>");
     private final JFormattedTextField textField_Y= new JFormattedTextField();
     private final JLabel labelX= new JLabel("<html>Distance to move in X<br/>(corrects for non-vertical channel)</html>");
@@ -62,7 +64,7 @@ public class LaserLysisForm extends JFrame {
     private final JButton startButton = new JButton("Move & Start Acquisition");
     
     // Initialize fire button for pulsed IR laser
-    private final JLabel instruction2 = new JLabel("<html>Pulsed IR Lysis Laser Conrols:</html>");
+    private final JPanel LaserPanel = new JPanel();
     private final ImageIcon laserIcon = new ImageIcon("C:/Program Files/Micro-Manager-2.0gamma/scripts/laser-icon-small.jpg");
     private final JButton fireButton = new JButton("Fire!", laserIcon);
 
@@ -89,7 +91,11 @@ public class LaserLysisForm extends JFrame {
         textField_dt.setValue(5);
         textField_dt.setColumns(4);
         textField_dt.setEditable(true);
-    
+        
+        // Add components to laser panel
+        LaserPanel.setBorder(BorderFactory.createTitledBorder("Pulsed IR Lysis Laser Conrols"));
+        LaserPanel.add(fireButton);
+        
         // Arrange GUI window
         setTitle("Dynamic SiMPull Acquisition");
         setSize(400, 400);
@@ -123,11 +129,8 @@ public class LaserLysisForm extends JFrame {
         c.anchor = GridBagConstraints.CENTER;
         cp.add(startButton,c);
         c.gridy = 5;
-        c.anchor = GridBagConstraints.LINE_START;
-        cp.add(instruction2,c);
-        c.gridy = 6;
-        c.anchor = GridBagConstraints.CENTER;
-        cp.add(fireButton,c);
+        c.ipadx = 100;
+        cp.add(LaserPanel,c);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setVisible(true);        
         
