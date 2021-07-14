@@ -5,6 +5,8 @@
  */
 package LaserLysis;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.micromanager.Studio;
 import org.micromanager.MenuPlugin;
 import org.scijava.plugin.SciJavaPlugin;
@@ -35,7 +37,11 @@ public class LaserLysis implements MenuPlugin, SciJavaPlugin {
     @Override
     public void onPluginSelected() {
         if (myFrame_ == null) {
-            myFrame_ = new LaserLysisForm(gui_);
+            try {
+                myFrame_ = new LaserLysisForm(gui_);
+            } catch (Exception ex) {
+                Logger.getLogger(LaserLysis.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         myFrame_.setVisible(true);
     }
