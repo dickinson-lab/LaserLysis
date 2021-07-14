@@ -1,4 +1,20 @@
-/*
+/* This is a modified version of the Micro-Manager Arduino Firmware code written by Nico Stuurman.
+ * The code was modified to control Teem  Photonics pulsed microchip lasers. 
+ *
+ * After adding the Adrduino shutter device in Micro-manager, the laser can be triggered to 
+ * fire a single shot by setting Switch-State property to 1. 
+ * 
+ * There are also two continuous-pulsing modes that are useful for laser alignment. 
+ * If Switch-State is set to 2, the laser will fire a shot every 0.5 seconds. 
+ * If Switch-State is set to 8, the laser will fire continuously at 490 Hz, which 
+ * produces a pseudo-constant output beam that can be aligned like a CW laser. 
+ *
+ * The pulsed laser controls use signal bits 1, 2 and 4 of the digital output pattern. 
+ * Signal bits 3, 5 and 6 remain available to control other shutters or digital outputs, 
+ * as originally designed.
+ *
+ * Below is Nico's original header description:
+ *
  * This goal of the application is to set the digital output on pins 8-13 
  * This can be accomplished in three ways.  First, a serial command can directly set
  * the digital output pattern.  Second, a series of patterns can be stored in the 
