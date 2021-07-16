@@ -48,9 +48,14 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.List;
 import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Set;
+import javax.swing.BoxLayout;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 import org.micromanager.PropertyMaps;
 
 /**
@@ -66,8 +71,9 @@ public class LaserLysisForm extends JFrame {
     double startPosition;
 
     // Initialize Dialog Box Components
+    private final JPanel AcquisitionPanel = new JPanel();
     // Channel Information
-    private final JLabel label_ch1 = new JLabel("<html>Channel & Exposure information:</html");
+    private final JLabel label_ch1 = new JLabel("<html>Channel:</html");
     private final JComboBox channel1 = new JComboBox(none);
     private final JLabel label_n_ch1= new JLabel("<html>Frames:</html>");
     private final JFormattedTextField textField_n_ch1= new JFormattedTextField();
@@ -90,6 +96,12 @@ public class LaserLysisForm extends JFrame {
     private final ImageIcon laserIcon = new ImageIcon("C:/Program Files/Micro-Manager-2.0gamma/scripts/laser-icon-small.jpg");
     private final JButton fireButton = new JButton("Fire!", laserIcon);
     private final JButton resetButton = new JButton("Clear shot log");
+    private final JLabel label_alignment = new JLabel("Pulsed laser alignment tools. Experts only!");
+    private final JSwitchBox alignmentSwitch = new JSwitchBox("enabled","disabled");
+    private final JLabel label_blinkSwitch = new JLabel("Enable firing every 0.5s");
+    private final JSwitchBox blinkSwitch = new JSwitchBox("on","off");
+    private final JLabel label_contSwitch = new JLabel("Enable continuous firing at 490 Hz");
+    private final JSwitchBox contSwitch = new JSwitchBox("on","off");
 
     private acquisitionWorker acquisition;
     
@@ -230,7 +242,13 @@ public class LaserLysisForm extends JFrame {
         dirChooser.setApproveButtonText("Select Directory");
         dirChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         textField_name.setColumns(20);
-        textField_name.setEditable(true);      
+        textField_name.setEditable(true);
+        alignmentSwitch.setSelected(false);
+        alignmentSwitch.setEnabled(true);
+        blinkSwitch.setSelected(false);
+        blinkSwitch.setEnabled(false);
+        contSwitch.setSelected(false);
+        contSwitch.setEnabled(false);
         
         // Populate drop-down menus
         mmcorej.StrVector channelGroupVector = mmc_.getAvailableConfigGroups();
@@ -240,23 +258,85 @@ public class LaserLysisForm extends JFrame {
         for (String channel:channelList) {
             channel1.addItem(channel);
         }
+        // Add components to acquisition panel 
+        TitledBorder title1 = BorderFactory.createTitledBorder("Acquisition Controls");
+        Border empty = BorderFactory.createEmptyBorder(10,10,10,10);
+        AcquisitionPanel.setBorder(BorderFactory.createCompoundBorder(empty,title1));
+        AcquisitionPanel.setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(10,10,10,10);
+        c.anchor = GridBagConstraints.LINE_START;
+        c.gridwidth = 1;
+        c.gridx = 0;
+        c.gridy = 0;
+        AcquisitionPanel.add(label_ch1,c);
+        c.gridx = 1;
+        AcquisitionPanel.add(channel1,c);
+        c.gridx = 2;
+        AcquisitionPanel.add(label_n_ch1,c);
+        c.gridx = 3;
+        AcquisitionPanel.add(textField_n_ch1,c);
+        c.gridx = 4;
+        AcquisitionPanel.add(label_exp_ch1,c);
+        c.gridx = 5;
+        AcquisitionPanel.add(textField_exp_ch1,c);
+        c.gridx = 0;
+        c.gridy = 1;
+        AcquisitionPanel.add(label_dir,c);
+        c.gridx = 1;
+        c.gridwidth = 2;
+        AcquisitionPanel.add(textField_dir,c);
+        c.gridx = 3;
+        c.gridwidth = 1;
+        AcquisitionPanel.add(dirButton,c);
+        c.gridy = 2;
+        c.gridx = 0;
+        c.gridwidth = 1;
+        AcquisitionPanel.add(label_name,c);
+        c.gridx = 1;
+        c.gridwidth = 2;
+        AcquisitionPanel.add(textField_name,c);
+        c.gridx = 0;
+        c.gridy = 3;
+        c.gridwidth = 4;
+        c.anchor = GridBagConstraints.CENTER;
+        AcquisitionPanel.add(startButton,c);
         
         // Add components to laser panel
-        LaserPanel.setBorder(BorderFactory.createTitledBorder("Pulsed IR Lysis Laser Conrols"));
+        TitledBorder title2 = BorderFactory.createTitledBorder("Pulsed IR Lysis Laser Conrols");
+        LaserPanel.setBorder(BorderFactory.createCompoundBorder(empty,title2));
         LaserPanel.setLayout(new GridBagLayout());
         GridBagConstraints d = new GridBagConstraints();
         d.insets = new Insets(10,10,10,10);
         d.anchor = GridBagConstraints.CENTER;
-        d.gridwidth = 1;
+        d.gridwidth = 2;
         d.gridx = 0;
         d.gridy = 0;
         LaserPanel.add(fireButton,d);
         d.gridy = 1;
         LaserPanel.add(resetButton,d);
+        d.gridy = 2;
+        d.anchor = GridBagConstraints.LINE_START;
+        LaserPanel.add(label_alignment,d);
+        d.gridy = 3;
+        d.anchor = GridBagConstraints.CENTER;
+        LaserPanel.add(alignmentSwitch,d);
+        d.gridy = 4;
+        d.anchor = GridBagConstraints.LINE_START;
+        d.gridwidth = 1;
+        LaserPanel.add(label_blinkSwitch,d);
+        d.gridx = 1; 
+        LaserPanel.add(label_contSwitch,d);
+        d.gridx = 0;
+        d.gridy = 5;
+        d.anchor = GridBagConstraints.CENTER;
+        LaserPanel.add(blinkSwitch,d);
+        d.gridx = 1;
+        LaserPanel.add(contSwitch,d);
         
         // Arrange GUI window
         setTitle("Dynamic SiMPull Acquisition");
-        setSize(550, 450);
+        setSize(550, 600);
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice defaultScreen = ge.getDefaultScreenDevice();
         Rectangle rect = defaultScreen.getDefaultConfiguration().getBounds();
@@ -264,49 +344,9 @@ public class LaserLysisForm extends JFrame {
         setLocation(x, 500);
         
         Container cp = getContentPane();
-        cp.setLayout(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(10,10,10,10);
-        c.anchor = GridBagConstraints.LINE_START;
-        c.gridwidth = 1;
-        c.gridx = 0;
-        c.gridy = 0;
-        cp.add(label_ch1,c);
-        c.gridy = 1;
-        cp.add(channel1,c);
-        c.gridx = 1;
-        cp.add(label_n_ch1,c);
-        c.gridx = 2;
-        cp.add(textField_n_ch1,c);
-        c.gridx = 3;
-        cp.add(label_exp_ch1,c);
-        c.gridx = 4;
-        cp.add(textField_exp_ch1,c);
-        c.gridx = 0;
-        c.gridy = 2;
-        cp.add(label_dir,c);
-        c.gridx = 1;
-        c.gridwidth = 2;
-        cp.add(textField_dir,c);
-        c.gridx = 3;
-        c.gridwidth = 1;
-        cp.add(dirButton,c);
-        c.gridy = 3;
-        c.gridx = 0;
-        c.gridwidth = 1;
-        cp.add(label_name,c);
-        c.gridx = 1;
-        c.gridwidth = 2;
-        cp.add(textField_name,c);
-        c.gridx = 0;
-        c.gridy = 4;
-        c.gridwidth = 4;
-        c.anchor = GridBagConstraints.CENTER;
-        cp.add(startButton,c);
-        c.gridy = 5;
-        c.gridheight = 2;
-        c.ipadx = 100;
-        cp.add(LaserPanel,c);
+        cp.setLayout(new BoxLayout(cp, BoxLayout.PAGE_AXIS));
+        cp.add(AcquisitionPanel);
+        cp.add(LaserPanel);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setVisible(true);        
         
@@ -363,6 +403,57 @@ public class LaserLysisForm extends JFrame {
            public void actionPerformed(ActionEvent eText) {
                shotTimes.clear();
            }
+        });
+        
+        //Alignment switch controls
+        alignmentSwitch.addMouseListener( new MouseAdapter() {
+            @Override
+            public void mouseReleased( MouseEvent e ) {
+                if(new Rectangle( getPreferredSize() ).contains( e.getPoint() )) {
+                    blinkSwitch.setEnabled( alignmentSwitch.isSelected() );
+                    contSwitch.setEnabled( alignmentSwitch.isSelected() );
+                }
+            }
+        });
+        
+        blinkSwitch.addMouseListener( new MouseAdapter() {
+            @Override
+            public void mouseReleased( MouseEvent e ) {
+                if(new Rectangle( getPreferredSize() ).contains( e.getPoint() )) {
+                    try {
+                        if ( blinkSwitch.isSelected() ) {
+                            mmc_.setProperty("Arduino-Switch", "State", 2);
+                            mmc_.setProperty("561 Shutter", "OnOff", 1);
+                        } else {
+                            mmc_.setProperty("561 Shutter", "OnOff", 0);
+                            mmc_.setProperty("Arduino-Switch", "State", 16);
+                        }
+                    }
+                    catch (Exception error) {
+                        //TODO error handling
+                    }
+                }
+            }
+        });
+         
+        contSwitch.addMouseListener( new MouseAdapter() {
+            @Override
+            public void mouseReleased( MouseEvent e ) {
+                if(new Rectangle( getPreferredSize() ).contains( e.getPoint() )) {
+                    try {
+                        if ( contSwitch.isSelected() ) {
+                            mmc_.setProperty("Arduino-Switch", "State", 8);
+                            mmc_.setProperty("561 Shutter", "OnOff", 1);
+                        } else {
+                            mmc_.setProperty("561 Shutter", "OnOff", 0);
+                            mmc_.setProperty("Arduino-Switch", "State", 16);
+                        }
+                    }
+                    catch (Exception error) {
+                        //TODO error handling
+                    }
+                }
+            }
         });
         
     }
