@@ -12,23 +12,17 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import static java.lang.Math.max;
-import java.lang.Thread;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.scene.control.Labeled; 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JFormattedTextField;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
 import mmcorej.TaggedImage;
@@ -42,17 +36,13 @@ import org.micromanager.data.SummaryMetadata;
 import org.micromanager.display.DisplayWindow;
 import org.micromanager.PropertyMap;
 
-import ij.ImagePlus;
-import ij.io.FileSaver;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.List;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Set;
 import javax.swing.BoxLayout;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
@@ -381,9 +371,9 @@ public class LaserLysisForm extends JFrame {
         	try {
                     // Fire the laser
                     mmc_.setProperty("Arduino-Switch", "State", 1);
-                    mmc_.setProperty("561 Shutter", "OnOff", 1); //Even though this is called 561 shutter, it's just the Arduino.
+                    mmc_.setProperty("Arduino-Shutter", "OnOff", 1); //Even though this is called 561 shutter, it's just the Arduino.
                     mmc_.sleep(10);
-                    mmc_.setProperty("561 Shutter", "OnOff", 0);
+                    mmc_.setProperty("Arduino-Shutter", "OnOff", 0);
                     mmc_.setProperty("Arduino-Switch", "State", 16);
                     
                     // Add log information
@@ -423,9 +413,9 @@ public class LaserLysisForm extends JFrame {
                     try {
                         if ( blinkSwitch.isSelected() ) {
                             mmc_.setProperty("Arduino-Switch", "State", 2);
-                            mmc_.setProperty("561 Shutter", "OnOff", 1);
+                            mmc_.setProperty("Arduino-Shutter", "OnOff", 1);
                         } else {
-                            mmc_.setProperty("561 Shutter", "OnOff", 0);
+                            mmc_.setProperty("Arduino-Shutter", "OnOff", 0);
                             mmc_.setProperty("Arduino-Switch", "State", 16);
                         }
                     }
@@ -443,9 +433,9 @@ public class LaserLysisForm extends JFrame {
                     try {
                         if ( contSwitch.isSelected() ) {
                             mmc_.setProperty("Arduino-Switch", "State", 8);
-                            mmc_.setProperty("561 Shutter", "OnOff", 1);
+                            mmc_.setProperty("Arduino-Shutter", "OnOff", 1);
                         } else {
-                            mmc_.setProperty("561 Shutter", "OnOff", 0);
+                            mmc_.setProperty("Arduino-Shutter", "OnOff", 0);
                             mmc_.setProperty("Arduino-Switch", "State", 16);
                         }
                     }
