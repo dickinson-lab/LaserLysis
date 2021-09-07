@@ -107,8 +107,8 @@ public class LaserLysisForm extends JFrame {
             //Get info from dialog
             String ch1 = (String)channel1.getSelectedItem();
             String ch1_fileSuffix = ch1.replaceAll("\\+","-");
-            int n_ch1 = Integer.parseInt(textField_n_ch1.getText());
-            int exp_ch1 = Integer.parseInt(textField_exp_ch1.getText());
+            int n_ch1 = Integer.parseInt(textField_n_ch1.getText().replaceAll(",", ""));
+            int exp_ch1 = Integer.parseInt(textField_exp_ch1.getText().replaceAll(",", ""));
             
             String dir = textField_dir.getText();
             dir = dir.replaceAll("\\\\","/");
@@ -355,9 +355,6 @@ public class LaserLysisForm extends JFrame {
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent eText) {
-                int n_ch1 = Integer.parseInt(textField_n_ch1.getText());
-                int exp_ch1 = Integer.parseInt(textField_exp_ch1.getText());
-                
                 // Start acquisition
                 acquisition = new acquisitionWorker();
                 acquisition.execute();
@@ -371,7 +368,7 @@ public class LaserLysisForm extends JFrame {
         	try {
                     // Fire the laser
                     mmc_.setProperty("Arduino-Switch", "State", 1);
-                    mmc_.setProperty("Arduino-Shutter", "OnOff", 1); //Even though this is called 561 shutter, it's just the Arduino.
+                    mmc_.setProperty("Arduino-Shutter", "OnOff", 1); 
                     mmc_.sleep(10);
                     mmc_.setProperty("Arduino-Shutter", "OnOff", 0);
                     mmc_.setProperty("Arduino-Switch", "State", 16);
