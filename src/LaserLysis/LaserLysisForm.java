@@ -47,6 +47,8 @@ import javax.swing.BoxLayout;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import org.micromanager.PropertyMaps;
+import org.micromanager.data.Metadata;
+import org.micromanager.data.Pipeline;
 
 /**
  *
@@ -163,7 +165,7 @@ public class LaserLysisForm extends JFrame {
             // set up SummaryMetadataBuilder
             SummaryMetadata.Builder meta = gui_.data().getSummaryMetadataBuilder(); // <<<< initialize meta builder
 
-            // Save metadata
+            // Save Summary metadata
             String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS XXX").format(new Date());
             String XYStage = mmc_.getXYStageDevice();
             double currentPosition = mmc_.getYPosition(XYStage);
@@ -175,16 +177,31 @@ public class LaserLysisForm extends JFrame {
                                           userData(myParams).
                                           build() );
 
-          
+            // Set up MetadataBuilder for individual image planes
+            Metadata.Builder mb = gui_.data().metadataBuilder();
             
+            // Set up image processors
+            Pipeline pipeLine = gui_.data().copyApplicationPipeline(store, true);
+            
+            int width = (int) mmc_.getImageWidth();
+            int height = (int) mmc_.getImageHeight();
             int frame = 0;
             while ( mmc_.getRemainingImageCount() > 0 || mmc_.isSequenceRunning(mmc_.getCameraDevice()) ) {
                 if (mmc_.getRemainingImageCount() > 0) {
-                    TaggedImage tagged = mmc_.popNextTaggedImage();
+                    TaggedImage tagged = mmc_.popNextTaggedImage(); 
                     Image image = gui_.data().convertTaggedImage(tagged,
-                                                                 builder.c(0).t(frame).p(0).z(0).build(), 
-                                                                 null);
-                    store.putImage(image);
+                                                           builder.c(0).t(frame).p(0).z(0).build(), 
+                                                           null);
+                    if (frame != 0) {
+                        //Erase redundant metadata for all but the first frame
+                        image = image.copyWithMetadata(mb.bitDepth(image.getMetadata().getBitDepth()).
+                                                          elapsedTimeMs(image.getMetadata().getElapsedTimeMs(0)).
+                                                          imageNumber(image.getMetadata().getImageNumber()).
+                                                          build() );
+                    }
+                    
+                    pipeLine.insertImage(image); //Pass image to the processor pipeline instead of putting it directly into the dataStore
+                    //store.putImage(image);
                     frame++;
                 } else {
                     mmc_.sleep(Math.min(0.5 * exp, 20));
