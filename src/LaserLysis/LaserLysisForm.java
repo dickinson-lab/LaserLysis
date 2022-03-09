@@ -107,6 +107,7 @@ public class LaserLysisForm extends JFrame {
         @Override
         protected Void doInBackground() throws Exception {
             //Get info from dialog
+            String chGroup = mmc_.getChannelGroup();
             String ch1 = (String)channel1.getSelectedItem();
             String ch1_fileSuffix = ch1.replaceAll("\\+","-");
             int n_ch1 = Integer.parseInt(textField_n_ch1.getText().replaceAll(",", ""));
@@ -131,10 +132,11 @@ public class LaserLysisForm extends JFrame {
             if (!folder.exists()) {
                     folder.mkdir();
             }
-                                    
+            String savePath = dir+"/"+posName;
+            
             //Acquire Images
             if ( n_ch1>0 && !ch1.equals(none)) {
-                acquireChannel(ch1, n_ch1, exp_ch1, posName, dir);
+                acquireChannel(chGroup, ch1, n_ch1, exp_ch1, savePath);
             }
             
             return null;
@@ -142,13 +144,13 @@ public class LaserLysisForm extends JFrame {
     }        
     
     // Method to acquire a single channel of imaging data
-    private void acquireChannel(String ch, int n, int exp, String acqName, String dir) {
+    private void acquireChannel(String chGroup, String ch, int n, int exp, String savePath) {
         try {
             // Select Configuration
-            mmc_.setConfig(" ImagingChannel", ch);
+            mmc_.setConfig(chGroup, ch);
             
             // Initialize Acquisition
-            Datastore store = gui_.data().createRAMDatastore();
+            Datastore store = gui_.data().createMultipageTIFFDatastore(savePath, true, true);
             DisplayWindow display = gui_.displays().createDisplay(store);
             mmc_.setExposure(exp);
             
@@ -174,6 +176,8 @@ public class LaserLysisForm extends JFrame {
                                                           putDouble("Y Distance Moved",distanceMoved).
                                                           build();
             store.setSummaryMetadata(meta.startDate(timeStamp).
+                                          intendedDimensions(builder.c(1).z(1).t(n).p(1).build()).
+                                          axisOrder(Coords.CHANNEL,Coords.Z_SLICE,Coords.TIME_POINT, Coords.STAGE_POSITION).        
                                           userData(myParams).
                                           build() );
 
@@ -211,7 +215,6 @@ public class LaserLysisForm extends JFrame {
             //ij.IJ.setSlice(1);
 
             // Save and close
-            String savePath = dir+"/"+acqName;
             
             /* //Save with ImageJ
             ToImageJ dump = new ToImageJ();
@@ -222,7 +225,7 @@ public class LaserLysisForm extends JFrame {
             */
             
             // Save with MM
-            store.save(Datastore.SaveMode.MULTIPAGE_TIFF, savePath);
+            store.freeze();
             gui_.displays().closeDisplaysFor(store);
             store.close();
             shotTimes.clear(); //Erase laser shot log so we have a fresh start for the next acquisition
@@ -258,9 +261,8 @@ public class LaserLysisForm extends JFrame {
         contSwitch.setEnabled(false);
         
         // Populate drop-down menus
-        mmcorej.StrVector channelGroupVector = mmc_.getAvailableConfigGroups();
-        String[] groupList =channelGroupVector.toArray();
-        mmcorej.StrVector channelVector = mmc_.getAvailableConfigs(groupList[0]);
+        String chanGroup =mmc_.getChannelGroup();
+        mmcorej.StrVector channelVector = mmc_.getAvailableConfigs(chanGroup);
         String[] channelList = channelVector.toArray();
         for (String channel:channelList) {
             channel1.addItem(channel);
