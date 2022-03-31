@@ -6,5 +6,5 @@ https://doi.org/10.1016/j.bpj.2021.10.011
 Arduino Installation: <br>
 Copy code into the Arduino IDE and send to device.
 
-Micro-Manager plugin installation: 
+Micro-Manager plugin installation: <br>
 Copy the .jar file from the latest release into the 'mmplugins' folder in the Micro-Manager installation directory. The plugin will then appear in the Plugins menu under "Dickinson lab plugins."
