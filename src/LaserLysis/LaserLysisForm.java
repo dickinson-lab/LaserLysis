@@ -95,6 +95,8 @@ public class LaserLysisForm extends JFrame {
     private final JLabel label_contSwitch = new JLabel("Enable continuous firing at 490 Hz");
     private final JSwitchBox contSwitch = new JSwitchBox("on","off");
 
+    private String startPos; //Arduino shutter start position
+    
     private acquisitionWorker acquisition;
     
     public LaserLysisForm(Studio gui) throws Exception {
@@ -385,12 +387,17 @@ public class LaserLysisForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent eText) {
         	try {
+                    // Get initial Arduino shutter state
+                    startPos = mmc_.getProperty("Arduino-Switch","State");
+
                     // Fire the laser
                     mmc_.setProperty("Arduino-Switch", "State", 1);
                     mmc_.setProperty("Arduino-Shutter", "OnOff", 1); 
                     mmc_.sleep(10);
                     mmc_.setProperty("Arduino-Shutter", "OnOff", 0);
-                    mmc_.setProperty("Arduino-Switch", "State", 16);
+                    
+                    // Return to initial shutter state
+                    mmc_.setProperty("Arduino-Switch", "State", startPos);
                     
                     // Add log information
                     startPosition = mmc_.getYPosition(XYStage);
@@ -428,11 +435,12 @@ public class LaserLysisForm extends JFrame {
                 if(new Rectangle( getPreferredSize() ).contains( e.getPoint() )) {
                     try {
                         if ( blinkSwitch.isSelected() ) {
+                            startPos = mmc_.getProperty("Arduino-Switch","State");
                             mmc_.setProperty("Arduino-Switch", "State", 2);
                             mmc_.setProperty("Arduino-Shutter", "OnOff", 1);
                         } else {
                             mmc_.setProperty("Arduino-Shutter", "OnOff", 0);
-                            mmc_.setProperty("Arduino-Switch", "State", 16);
+                            mmc_.setProperty("Arduino-Switch", "State", startPos);
                         }
                     }
                     catch (Exception error) {
@@ -448,11 +456,12 @@ public class LaserLysisForm extends JFrame {
                 if(new Rectangle( getPreferredSize() ).contains( e.getPoint() )) {
                     try {
                         if ( contSwitch.isSelected() ) {
+                            startPos = mmc_.getProperty("Arduino-Switch","State");
                             mmc_.setProperty("Arduino-Switch", "State", 8);
                             mmc_.setProperty("Arduino-Shutter", "OnOff", 1);
                         } else {
                             mmc_.setProperty("Arduino-Shutter", "OnOff", 0);
-                            mmc_.setProperty("Arduino-Switch", "State", 16);
+                            mmc_.setProperty("Arduino-Switch", "State", startPos);
                         }
                     }
                     catch (Exception error) {
