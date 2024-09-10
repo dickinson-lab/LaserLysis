@@ -49,6 +49,9 @@ import javax.swing.border.TitledBorder;
 import org.micromanager.PropertyMaps;
 import org.micromanager.data.Metadata;
 import org.micromanager.data.Pipeline;
+import org.micromanager.data.internal.PropertyKey;
+import org.micromanager.display.DisplaySettings;
+import org.micromanager.display.internal.DefaultDisplaySettings;
 
 /**
  *
@@ -154,9 +157,24 @@ public class LaserLysisForm extends JFrame {
             // Initialize Acquisition
             Datastore store = gui_.data().createMultipageTIFFDatastore(savePath, true, true);
             DisplayWindow display = gui_.displays().createDisplay(store);
-            mmc_.setExposure(exp);
+            
+            //Update display settings
+            DisplaySettings dsTmp = DefaultDisplaySettings.restoreFromProfile(
+                                    gui_.profile(), PropertyKey.ACQUISITION_DISPLAY_SETTINGS.key());            
+            if (dsTmp == null) {
+                dsTmp = DefaultDisplaySettings.getStandardSettings(
+                    PropertyKey.ACQUISITION_DISPLAY_SETTINGS.key());
+            }
+            DisplaySettings.Builder settingsBuilder = dsTmp.copyBuilder(); 
+            DisplaySettings oldSettings;
+            DisplaySettings newSettings;
+            do {
+                oldSettings = display.getDisplaySettings();
+                newSettings = settingsBuilder.build();
+            } while (!display.compareAndSetDisplaySettings(oldSettings, newSettings));
             
             // Perform Acquisition
+            mmc_.setExposure(exp);
             // Arguments are the number of images to collect, the amount of time to wait
             // between images, and whether or not to halt the acquisition if the
             // sequence buffer overflows.
@@ -188,6 +206,7 @@ public class LaserLysisForm extends JFrame {
             
             // Set up image processors
             Pipeline pipeLine = gui_.data().copyApplicationPipeline(store, true);
+            
             
             int width = (int) mmc_.getImageWidth();
             int height = (int) mmc_.getImageHeight();
