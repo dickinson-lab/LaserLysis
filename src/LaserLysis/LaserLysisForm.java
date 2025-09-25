@@ -155,23 +155,17 @@ public class LaserLysisForm extends JFrame {
             mmc_.setConfig(chGroup, ch);
             
             // Initialize Acquisition
-            Datastore store = gui_.data().createMultipageTIFFDatastore(savePath, true, true);
-            DisplayWindow display = gui_.displays().createDisplay(store);
-            
+            Datastore store = gui_.data().createNDTIFFDatastore(savePath);
+
             //Update display settings
-            DisplaySettings dsTmp = DefaultDisplaySettings.restoreFromProfile(
-                                    gui_.profile(), PropertyKey.ACQUISITION_DISPLAY_SETTINGS.key());            
-            if (dsTmp == null) {
-                dsTmp = DefaultDisplaySettings.getStandardSettings(
-                    PropertyKey.ACQUISITION_DISPLAY_SETTINGS.key());
+            DisplaySettings.Builder settingsBuilder = gui_.displays().displaySettingsFromProfile(
+                                                            PropertyKey.ACQUISITION_DISPLAY_SETTINGS.key()).copyBuilder();            
+            if (settingsBuilder == null) {
+                settingsBuilder = DefaultDisplaySettings.builder();
             }
-            DisplaySettings.Builder settingsBuilder = dsTmp.copyBuilder(); 
-            DisplaySettings oldSettings;
-            DisplaySettings newSettings;
-            do {
-                oldSettings = display.getDisplaySettings();
-                newSettings = settingsBuilder.build();
-            } while (!display.compareAndSetDisplaySettings(oldSettings, newSettings));
+
+            DisplayWindow disp = gui_.displays().createDisplay(store, null,settingsBuilder.build()); //In the future, could replace "null" with controls if I can figure out how that's supposed to work
+            disp.setDisplaySettingsProfileKey(PropertyKey.ACQUISITION_DISPLAY_SETTINGS.key());
             
             // Perform Acquisition
             mmc_.setExposure(exp);
